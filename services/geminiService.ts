@@ -1,7 +1,13 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { ProjectState, ResearchDocument } from "../types";
 
-export const MISSING_API_KEY_ERROR = "MISSING_API_KEY";
+// Check if API key is available at module load time
+const apiKeyExists = !!(
+  (typeof window !== 'undefined' && localStorage.getItem('jalanea_gemini_key')) ||
+  (import.meta as any).env?.VITE_API_KEY ||
+  (typeof process !== 'undefined' && process.env?.API_KEY)
+);
+export const MISSING_API_KEY_ERROR = !apiKeyExists;
 
 const getClient = () => {
   const storedKey = localStorage.getItem('jalanea_gemini_key');
@@ -11,7 +17,7 @@ const getClient = () => {
 
   const apiKey = (import.meta as any).env.VITE_API_KEY || process.env.API_KEY;
   if (!apiKey) {
-    throw new Error(MISSING_API_KEY_ERROR);
+    throw new Error("MISSING_API_KEY: Please set VITE_API_KEY in your .env file");
   }
   return new GoogleGenAI({ apiKey });
 };
